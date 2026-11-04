@@ -1,0 +1,42 @@
+# "BEFORE" state: how secrets were handled pre-overhaul. Kept for comparison; do not copy.
+name: deploy (legacy)
+
+on:
+  workflow_dispatch:
+
+env:
+  # ANTI-PATTERN: plaintext credentials committed in the workflow file.
+  DB_HOST: db.prod.internal.example
+  DB_USER: legacy_app
+  DB_PASSWORD: Pg_Legacy_Sup3rS3cret_2024x
+  REGISTRY_URL: registry.internal.example:5000
+  DOCKER_USER: ci-deployer
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      # ANTI-PATTERN: long-lived static registry password, passed on the command line.
+      - name: Login to private registry
+        run: docker login "$REGISTRY_URL" -u "$DOCKER_USER" -p "${{ secrets.DOCKER_PASSWORD }}"
+
+      - name: Build and push
+        run: |
+          docker build -t "$REGISTRY_URL/legacy-app:${{ github.sha }}" app-stack
+          docker push "$REGISTRY_URL/legacy-app:${{ github.sha }}"
+
+      # ANTI-PATTERN: static, never-rotated SSH key with full host access written to disk.
+      - name: Install SSH key
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/id_rsa
+          chmod 600 ~/.ssh/id_rsa
+          ssh-keyscan -H deploy.internal.example >> ~/.ssh/known_hosts
+
+      # ANTI-PATTERN: shipping the plaintext .env file to the server.
+      - name: Deploy
+        run: |
+          scp app-stack/.env.legacy app-stack/docker-compose.legacy.yml deploy@deploy.internal.example:/opt/app/
+          ssh deploy@deploy.internal.example "cd /opt/app && DB_PASSWORD=$DB_PASSWORD docker compose -f docker-compose.legacy.yml up -d"

@@ -1,0 +1,59 @@
+title = "secrets-overhaul-project gitleaks config"
+
+[extend]
+useDefault = true
+
+# Custom rules target the project's dummy secrets. The dummy values use non-vendor
+# prefixes (dmy_, regtok_dmy_, sw3dmy) so GitHub Push Protection does not block pushes,
+# which also means the default vendor rules would miss them.
+
+[[rules]]
+id = "postgres-password"
+description = "Postgres/DB password assignment"
+regex = '''(?i)\b(?:POSTGRES|DB|PG)_PASSWORD["']?\s*[:=]\s*["']?([^\s"'$]{8,})'''
+secretGroup = 1
+keywords = ["postgres_password", "db_password", "pg_password"]
+
+[rules.allowlist]
+regexes = ['''^[A-Z][A-Z0-9_]*[,;)]?$''']  # skip bare identifiers, e.g. "JWT_SECRET": JWT_SIGNING_SECRET
+
+[[rules]]
+id = "s3-secret-key"
+description = "S3 / SeaweedFS secret key assignment"
+regex = '''(?i)\b(?:S3|SEAWEEDFS|AWS)_SECRET(?:_ACCESS)?_KEY["']?\s*[:=]\s*["']?([A-Za-z0-9/+]{30,})'''
+secretGroup = 1
+keywords = ["s3_secret", "seaweedfs_secret", "aws_secret"]
+
+[[rules]]
+id = "registry-auth-token"
+description = "Private Docker registry auth token / password"
+regex = '''(?i)\bREGISTRY_(?:AUTH_)?(?:TOKEN|PASSWORD)["']?\s*[:=]\s*["']?([^\s"'$]{16,})'''
+secretGroup = 1
+keywords = ["registry_auth_token", "registry_token", "registry_password"]
+
+[rules.allowlist]
+regexes = ['''^[A-Z][A-Z0-9_]*[,;)]?$''']  # skip bare identifiers, e.g. "JWT_SECRET": JWT_SIGNING_SECRET
+
+[[rules]]
+id = "jwt-signing-secret"
+description = "JWT signing secret assignment"
+regex = '''(?i)\bJWT_(?:SIGNING_)?SECRET["']?\s*[:=]\s*["']?([^\s"'$]{16,})'''
+secretGroup = 1
+keywords = ["jwt_secret", "jwt_signing_secret"]
+
+[rules.allowlist]
+regexes = ['''^[A-Z][A-Z0-9_]*[,;)]?$''']  # skip bare identifiers, e.g. "JWT_SECRET": JWT_SIGNING_SECRET
+
+[[rules]]
+id = "dummy-stripe-key"
+description = "Project dummy Stripe-style secret key"
+regex = '''\b(dmy_stripe_(?:live|test)_[A-Za-z0-9]{24,})\b'''
+secretGroup = 1
+keywords = ["dmy_stripe_"]
+
+[allowlist]
+description = "Generated reports and VCS internals"
+paths = [
+  '''(^|/)\.git/''',
+  '''docs/step1-gitleaks-report\.json$''',
+]

@@ -1,0 +1,9 @@
+.env
+.env.*
+!app-stack/.env.legacy
+.terraform/
+*.tfstate*
+*.key
+venv/
+.venv/
+__pycache__/

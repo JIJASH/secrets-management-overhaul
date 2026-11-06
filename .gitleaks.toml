@@ -56,4 +56,11 @@ description = "Generated reports and VCS internals"
 paths = [
   '''(^|/)\.git/''',
   '''docs/step1-gitleaks-report\.json$''',
+  '''\.enc\.env$''',
+  '''\.sops\.yaml$''',
+  '''docs/step1-gitleaks-report\.json$''',
+  '''gitleaks-report\.json$'''
+]
+regexes = [
+  '''ENC\[AES256_GCM,data:'''
 ]

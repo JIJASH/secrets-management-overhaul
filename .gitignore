@@ -218,3 +218,7 @@ __marimo__/
 
 # Streamlit
 .streamlit/secrets.toml
+
+./bootstrap/infisical_pg_data/
+
+./bootstrap/infisical_redis_data/

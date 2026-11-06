@@ -1,0 +1,3 @@
+creation_rules:
+  - path_regex: bootstrap/.*\.enc\.env$
+    age: age17kwefn6ms8lqnewrpmkpn03nd59ldnrq3w0ak07sn9hswk7cmsqsjqswmv
